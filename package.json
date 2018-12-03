@@ -1,7 +1,7 @@
 {
   "name": "summarymd",
   "version": "1.0.0",
-  "description": "For [zroiorz]().",
+  "description": "A tool For 'SUMMARY.md'.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,9 +10,11 @@
     "type": "git",
     "url": "git@gitee.com:class877/summarymd.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "YYago",
+  "license": "MIT",
   "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "lodash": "^4.17.11",
     "node-modules-custom": "^1.0.6",
     "vinyl-read": "^1.0.0"
   }
