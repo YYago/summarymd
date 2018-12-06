@@ -1,19 +1,25 @@
 'use strict';
 
+/**
+ * @file index.js
+ * @description 
+ * 
+ * 主要文件
+ */
+
 const fs = require('fs');
-const nmc = require('node-modules-custom');
-const lodah = require('lodash');
 const path = require('path');
 const vinlyRead = require('vinyl-read');
 const cheerio = require('cheerio');
 const osType = require('os').type();
+
 /** @class */
 class summary {
     constructor() {
         /** 默认的全局文档匹配表达式*/
         this.includeDocs = ['./**/*.md', './**/*.html', './**/*.markdown', './**/*.mdown', './**/*.htm'];
         /** 默认的全局文档排除匹配表达式*/
-        this.excludeDocs = ['!./node_modules/**/*.*', '!./_summary.md', './SUMMARY.md'];
+        this.excludeDocs = ['!./**/node_modules/**/*.*', '!./_summary.md', './SUMMARY.md','!./**/_book/**/*.*'];
         /** 默认的远程路径匹配正则表达式*/
         this.remoteHrefRegexp = /(\w\:\/|(\.\.\/)|(\:\\\\)|(\w+\:\d+)|\~\/|(\d.+\.\d).[\/|\:\?]?)|((\w\.[\w|\d]).*\/.+([\/]|\:\d|\.html|\.php|\.jsp|\.asp|\.py))/g;
         /** 默认的全局作用路径*/
@@ -22,8 +28,9 @@ class summary {
         this._summLinkRegxp = /\]\(.*\.m(ar|d|k|down)+\)|\]\(.*\.ht(m|l)+\)/g;
         /** 对_summLinkRegxp 匹配到结果进行清理(*也许你需要重置它以满足自己的需求*).*/
         this._signBedelted = /^\]\(|\)$/g;
-
+        /** li 匹配正则表达式*/
         this._linkRegxpMatch = /\*.*(\n|\r\n|\r)/g;
+        /** li 匹配结果整理*/
         this._linkRegxpReplace = {
             step1: /^.*(\*.+\[)/g,
             step2: /\)\n/g,
@@ -169,7 +176,34 @@ class summary {
             return
         }
     };
+    /** 
+     * li 缩进控制
+     * @param {string} href -file path.
+    */
+    li_indent(href){
+        let prefixRegexp = /^\.\//g;
+        let blankSp = ` `;
+        let hrefn = href.replace(prefixRegexp,"");
+        let pLeng = hrefn.match(/\//g);
+        let pL;
+        if(pLeng!==null){
+            pL = pLeng.length;
+        }else{
+            pLeng =0
+        }
+        let pL_dir;
+        if(pL>1&&pL<3){
+            pL_dir = 1;
+        }else if(pL>3){
+            pL_dir = 2;
+        }else{
+            pL_dir =0;
+        }
+        return {default:pL,byDir:pL_dir}
+        
+    };
 }
+
 /** @class*/
 class getDocTitle {
     constructor() {
@@ -238,17 +272,17 @@ class getDocTitle {
         return content_title
     }
     /**
-     * 从 markdown 文件中获取 title
+     * 从文件中获取 title (仅限 Markdown 和 HTML 类型文件)
      * @method
      * @param {string} FilePath -Markdown file path.
-     * @returns {object} 
-     * @property {string} title
-     * @property {array} summary_link_with_title
+     * 
+     * returns {object} `title`、`summary_link_with_title`
      */
-    fromMarkdon(FilePath) {
+    fromFile(FilePath) {
         let str = fs.readFileSync(FilePath, { encoding: 'utf8' });
         let fType = path.extname(FilePath);
         let ftitle = this.fromContent(str, fType);
+        
         return {
             title: ftitle,
             summary_link_with_title: [ftitle, FilePath]
@@ -260,7 +294,7 @@ class getDocTitle {
      * 
      * @method
      * @param {FilePath} FilePath  -HTML filepath.
-     * @returns {object}
+     * 
      * @property {string} title -The First H1 of HTML.
      * @property {array} summary_link_with_title -[title, FilePath]
     */
@@ -277,9 +311,10 @@ class getDocTitle {
     /**
      *  for `SUMMARY.md` link use file basename.
      * @param {string} FilePath - 路径
+     * @returns {string[]}
      * @example 
      * 
-     * `* [myDoc](docs/new/myDoc.md)`
+     * `* [myDoc](docs/new/myDoc.md)`--> `["myDoc","docs/new/myDoc.md"]`
      */
     summaryLink_with_filebasename(FilePath) {
         return [path.basename(FilePath), FilePath];
