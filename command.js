@@ -41,14 +41,14 @@ const summaryConfJSON =
         "isUseFileBaseNameAsTitle": false,
         "contentsToAppend":"",
         "isMkdir": false,
-        "headTeamplate":"default",
+        "headTeamplate":"default"
     },
     "globalReplace":{
         "Enable": false,
         "findAs": "",
         "replaceAs": ""
     },
-    "watcher":true,
+    "watcher":true
 }`;
 
 let hasSummaryFile = fs.existsSync('./SUMMARY.md');

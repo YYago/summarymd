@@ -106,7 +106,6 @@ class summary {
                     out_remoteFiles.push(item);
                 }
             }
-            console.log(`  Done! ......You can change the RegExp("SummaryStatus._RemoteHrefRegExp"${__filename}:85:12) to inclde or exclude files custom.`)
             return {
                 Local: out_localFiles,
                 Remote: out_remoteFiles
