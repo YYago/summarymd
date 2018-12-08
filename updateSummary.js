@@ -11,8 +11,8 @@ const fs = require('fs');
 const lodash = require('lodash');
 const summApi = require('./index');
 
-const gTitle = new summApi.getDocTitle();
-const gSumm = new summApi.summary();
+const gTitle =summApi.getDocTitle;
+const gSumm = summApi.summary;
 
 /** @class*/
 class updateSummary {
@@ -127,7 +127,7 @@ class updateSummary {
             let spLen = bsL * opts.indLength;
             let prefixIdent = ` `.repeat(spLen);
             let LiSignSp = opts.liSign.trim()
-            let bepush = `${prefixIdent}${opts.liSign} [${ite_text}](${link_href})`;
+            let bepush = `${prefixIdent}${LiSignSp} [${ite_text}](${link_href})`;
             wdata.push(bepush);
         }
         let wdatas = wdata.join('\n');
@@ -135,6 +135,4 @@ class updateSummary {
     };
 }
 
-module.exports = {
-    updateSummary
-}
+module.exports = new updateSummary()

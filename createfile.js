@@ -11,7 +11,7 @@ const summaryAPI = require('./index');
 const nmc = require('node-modules-custom');
 const path = require('path');
 
-const summStatu = new summaryAPI.summary();
+const summStatu = summaryAPI.summary;
 
 /**@class */
 class creater {
@@ -122,6 +122,4 @@ class creater {
         }
     }
 }
-module.exports = {
-    creater
-}
+module.exports = new creater()

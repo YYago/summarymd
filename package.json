@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A tool For 'SUMMARY.md'.",
   "main": "index.js",
+  "bin": {
+    "zz": "command.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,7 +17,6 @@
   "license": "MIT",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
-    "inquirer": "^6.2.1",
     "lodash": "^4.17.11",
     "node-modules-custom": "^1.0.6",
     "vinyl-read": "^1.0.0"

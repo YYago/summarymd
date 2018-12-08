@@ -321,7 +321,7 @@ class getDocTitle {
     }
 }
 
-module.exports = {
-    summary,
-    getDocTitle
+module.exports={
+    summary: new summary(),
+    getDocTitle: new getDocTitle()
 }
