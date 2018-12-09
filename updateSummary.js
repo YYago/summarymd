@@ -4,15 +4,21 @@
  * @file updateSummary.js
  * @description 
  *  
- *  创建` _summary.md `(默认) 文件，将未被加入到` SUMMARY.md `的文件列入其中，简单地说是批量生成链接。已存在于 `SUMMARY.md` 的文件将不会再列出。
+ *  创建` _summary.md `(默认) 文件，将未被加入到` SUMMARY.md `的文件列入其中，简单地说是批量生成链接。**已存在于 `SUMMARY.md` 的文件将不会再列出**。
+ *  
+ * 注意：
+ * 
+ *  - 使用 Git 等工具提交时应注意 `_summary.md` 是否应该随文档一起提交。它只是个临时文件，应该在执行提交之前删掉它或者将其添加到类似 `.gitignore` 中默认排除在项目文件之外。
+ *  - 相应地，如果有配置文件（使用 `zz config` 命令时创建的配置文件）：`summarymd.json` , 它是临时目录更新、批量创建文件的任务配置文件。若是团队协作，则应该保留并提交（如果成员都用 summarymd 包的话——使用相同的配置可以保证处理方式的一致性）。
+ * 反之，则应该在提交之前删除或者添加到类似 `.gitignore` 中，避免混入项目文件中。
  */
 
 const fs = require('fs');
 const lodash = require('lodash');
 const summApi = require('./index');
 
-const gTitle =summApi.getDocTitle;
-const gSumm = summApi.summary;
+const gTitle =new summApi.getDocTitle();
+const gSumm = new summApi.summary();
 
 /** @class*/
 class updateSummary {
@@ -34,7 +40,7 @@ class updateSummary {
         /** 是否已文件夹作为缩进依据（默认以文件夹层级(深度)数作为缩进依据，选 `true`则只分三级(仅会缩进两级，三层目录之后不再继续缩进)）*/
         this._conf_indentByDir = false;
         /** 更新目录的文件源 `['filepath0',filepath1,...]`*/
-        this._conf_lists = lodash.difference(gSumm.DocsFileList(), gSumm.havenListedDocs());
+        this._conf_lists = lodash.difference(gSumm.DocsFileList().relative, gSumm.havenListedDocs());
         /** 输出临时目录文件到？*/
         this._conf_out = "./_summary.md";
     };
@@ -49,7 +55,7 @@ class updateSummary {
         for (let i in listArr) {
             let item = listArr[i];
             let bpush = gTitle.summaryLink_with_filebasename(item);
-            Text_Herf.posh(bpush);
+            Text_Herf.push(bpush);
         }
         return Text_Herf;
     };
@@ -90,7 +96,7 @@ class updateSummary {
             lists: fnOptions.lists || this._conf_lists,
             isIndent: fnOptions.isIndent !== false,
             spaceLength: fnOptions.TabLength || 4,
-            usFBNALT: fnOptions.usFileBaseNameAsLinkText !== true,
+            usFBNALT: fnOptions.usFileBaseNameAsLinkText !== false,
             liSign: fnOptions.liSign || "*",
             EncodeURI: fnOptions.EncodeURI !== false,
             indentByDir: fnOptions.indentByDir !== false,
@@ -124,7 +130,7 @@ class updateSummary {
                 bsL = 0;
             };
             // 构建单个 li
-            let spLen = bsL * opts.indLength;
+            let spLen = bsL * opts.spaceLength;
             let prefixIdent = ` `.repeat(spLen);
             let LiSignSp = opts.liSign.trim()
             let bepush = `${prefixIdent}${LiSignSp} [${ite_text}](${link_href})`;
@@ -135,4 +141,4 @@ class updateSummary {
     };
 }
 
-module.exports = new updateSummary()
+module.exports = updateSummary

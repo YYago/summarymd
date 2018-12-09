@@ -2,9 +2,6 @@
 
 /**
  * @file index.js
- * @description 
- * 
- * 主要文件
  */
 
 const fs = require('fs');
@@ -16,10 +13,21 @@ const osType = require('os').type();
 /** @class */
 class summary {
     constructor() {
-        /** 默认的全局文档匹配表达式*/
+        /** 
+         * 默认的全局文档匹配表达式
+         *
+         * - 仅 Markdown 和 HTML 类文件。
+        */
         this.includeDocs = ['./**/*.md', './**/*.html', './**/*.markdown', './**/*.mdown', './**/*.htm'];
-        /** 默认的全局文档排除匹配表达式*/
-        this.excludeDocs = ['!./**/node_modules/**/*.*', '!./_summary.md', './SUMMARY.md','!./**/_book/**/*.*'];
+        /** 
+         * 默认的全局文档排除匹配表达式。默认值：
+         * 
+         * - '!./\*\*\/node_modules\/\*\*\/\*.\*' ——排除所有本地 pack 文件。
+         * - '!./_summary.md' ——排除生成的文件。
+         * - '!./SUMMARY.md' ——排除项目目录文件。
+         * - '!.\/\*\*\/_book\/\*\*\/\*.\*' ——排除 GiBook build 命令生成的默认文件夹。
+        */
+        this.excludeDocs = ['!./**/node_modules/**/*.*', '!./_summary.md', '!./SUMMARY.md', '!./**/_book/**/*.*'];
         /** 默认的远程路径匹配正则表达式*/
         this.remoteHrefRegexp = /(\w\:\/|(\.\.\/)|(\:\\\\)|(\w+\:\d+)|\~\/|(\d.+\.\d).[\/|\:\?]?)|((\w\.[\w|\d]).*\/.+([\/]|\:\d|\.html|\.php|\.jsp|\.asp|\.py))/g;
         /** 默认的全局作用路径*/
@@ -38,21 +46,34 @@ class summary {
         }
     }
     /**
+     * 在默认排除文件的基础上新增要排除的文件
+     * @method
+     * @param {string|string[]} igs -要排除的文件
+     * @returns {string[]} -返回新的数组。 
+     */
+    excludeDocsAdd(igs){
+        let wfs;
+        if (igs == undefined || igs == null || igs == [null] || igs == "") {
+            wfs = [...this.includeDocs, ...this.excludeDocs];
+        } else if (typeof (igs) == "object") {
+            wfs = [...this.includeDocs, ...this.excludeDocs, ...igs];
+        } else if (typeof (igs) == "string") {
+            wfs = [...this.includeDocs, ...this.excludeDocs, igs];
+        }
+        return wfs;
+    }
+    /**
      * 获取当前路径下的所有 Markdown\HTML 类文件
      * @method
      * @param {string|string[]} ignoreDocs -要排除的文件。
+     * @returns
+     * @property {string[]} resolve -绝对路径
+     * @property {string[]} relative -相对路径
      * 
      * 默认的配置来自 `summary.property.includeDocs` 及 `summary.property.excludeDocs`.
      */
     DocsFileList(ignoreDocs) {
-        let wants;
-        if (ignoreDocs == undefined) {
-            wants = [...this.includeDocs, ...this.excludeDocs];
-        } else if (typeof (ignoreDocs) == "object") {
-            wants = [...this.includeDocs, ...this.excludeDocs, ...ignoreDocs];
-        } else if (typeof (ignoreDocs) == "string") {
-            wants = [...this.includeDocs, ...this.excludeDocs, ignoreDocs];
-        }
+        let wants = this.excludeDocsAdd(ignoreDocs);
         let vinyleRes = vinlyRead.sync(wants, { read: false });
         let rs_path = [];
         let rs_path_relative = [];
@@ -78,11 +99,16 @@ class summary {
      * 获取已经被写进 `summary.md` 中的文件。
      * @method
      * @param {string} summaryFile -目录文件路径，默认：`'./SUMMARY.md'`。
-     * @returns {Array}
-     * @description 远程文件会被忽略(指向远程地址的 `URL` 以及指向当前文件夹以外的本地文件(像这种: "../example/..."))
+     * @returns
+     * @property {string[]} Local -仅当前目录下的本地文件路径。
+     * @property {string[]} Remote -“远程文件路径”
+     * @property {string[]}
     */
     havenListedDocs(summaryFile) {
         let listFile = summaryFile || path.join(this.rootDir, 'SUMMARY.md');
+        if(fs.existsSync(listFile)==false){
+            return [];
+        }
         let lfContent = fs.readFileSync(listFile, { encoding: 'utf8' });
         let matchByLinkRegxp = lfContent.match(this._summLinkRegxp)
         if (!(matchByLinkRegxp == null)) {
@@ -171,7 +197,7 @@ class summary {
             }
             return vbfArr;
         } else {
-            console.log(`   Con't Match anything from ${sf}.`)
+            console.log(`   ${__filename}200:46 Con't Match anything from ${sf}.`)
             return
         }
     };
@@ -179,27 +205,27 @@ class summary {
      * li 缩进控制
      * @param {string} href -file path.
     */
-    li_indent(href){
+    li_indent(href) {
         let prefixRegexp = /^\.\//g;
         let blankSp = ` `;
-        let hrefn = href.replace(prefixRegexp,"");
+        let hrefn = href.replace(prefixRegexp, "");
         let pLeng = hrefn.match(/\//g);
         let pL;
-        if(pLeng!==null){
+        if (pLeng !== null) {
             pL = pLeng.length;
-        }else{
-            pLeng =0
+        } else {
+            pLeng = 0
         }
         let pL_dir;
-        if(pL>1&&pL<3){
+        if (pL > 1 && pL < 3) {
             pL_dir = 1;
-        }else if(pL>3){
+        } else if (pL > 3) {
             pL_dir = 2;
-        }else{
-            pL_dir =0;
+        } else {
+            pL_dir = 0;
         }
-        return {default:pL,byDir:pL_dir}
-        
+        return { default: pL, byDir: pL_dir }
+
     };
 }
 
@@ -281,7 +307,7 @@ class getDocTitle {
         let str = fs.readFileSync(FilePath, { encoding: 'utf8' });
         let fType = path.extname(FilePath);
         let ftitle = this.fromContent(str, fType);
-        
+
         return {
             title: ftitle,
             summary_link_with_title: [ftitle, FilePath]
@@ -320,7 +346,7 @@ class getDocTitle {
     }
 }
 
-module.exports={
-    summary: new summary(),
-    getDocTitle: new getDocTitle()
+module.exports = {
+    summary,
+    getDocTitle
 }
