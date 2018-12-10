@@ -26,7 +26,7 @@ class updateSummary {
         /** 
          * 是否使用缩进
          * 
-         * - 如果 `true`,则后续的关于缩进的设置不生效。
+         * - 如果 `false`,则后续的关于缩进的设置不生效。
         */
         this._conf_isIndent = true;
         /** 缩进空格数*/

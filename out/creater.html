@@ -1,213 +1,896 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <title>JSDoc: Class: creater</title>
+
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
 </head>
 
 <body>
-    <div id="main">
-        <h1 class="page-title">Class: creater</h1>
-        <section>
-            <header>
-                <h2><span class="attribs"><span class="type-signature"></span></span>creater<span class="signature">()</span><span
-                        class="type-signature"></span></h2>
-            </header>
-            <article>
-                <div class="container-overview">
-                    <h4 class="name" id="creater"><span class="type-signature"></span>new creater<span class="signature">()</span><span
-                            class="type-signature"></span></h4>
-                    <dl class="details"><dt class="tag-source">Source:</dt>
-                        <dd class="tag-source">
-                            <ul class="dummy">
-                                <li><a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line17">line
-                                        17</a></li>
-                            </ul>
-                        </dd>
-                    </dl>
-                </div>
-                <h3 class="subsection-title">Members</h3>
-                <h4 class="name" id="_contentsToAppend"><span class="type-signature"></span>_contentsToAppend<span
-                        class="type-signature"></span></h4>
-                <div class="description">附加的文档正文内容（比如某些特定模版内容）</div>
-                <dl class="details"><dt class="tag-source">Source:</dt>
-                    <dd class="tag-source">
-                        <ul class="dummy">
-                            <li><a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line22">line
-                                    22</a></li>
-                        </ul>
-                    </dd>
-                </dl>
-                <h4 class="name" id="_headTemplates"><span class="type-signature"></span>_headTemplates<span class="type-signature"></span></h4>
-                <div class="description">文档头部模版- default: 使用`#` 作为 H1 的 markdown 文件头部模版;- equal: 使用`====` 作为 H1 标记的
-                    markdown 文件头部模版；- yaml: 使用 YAML 头的 markdown 文件头部模版；- html(不可用，否则会对 markdown 类文件造成破坏——某些元素无法解析):-
-                    HTML 或者 htm 文件不易固定，但已在函数内部使用完整（常规的HTML5——EMMET `html!`展开）的基础模版。</div>
-                <dl class="details"><dt class="tag-source">Source:</dt>
-                    <dd class="tag-source">
-                        <ul class="dummy">
-                            <li><a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line34">line
-                                    34</a></li>
-                        </ul>
-                    </dd>
-                </dl>
-                <h4 class="name" id="_ignores"><span class="type-signature"></span>_ignores<span class="type-signature"></span></h4>
-                <div class="description">不会被创建的文件（远程链接）匹配正则表达式</div>
-                <dl class="details"><dt class="tag-source">Source:</dt>
-                    <dd class="tag-source">
-                        <ul class="dummy">
-                            <li><a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line24">line
-                                    24</a></li>
-                        </ul>
-                    </dd>
-                </dl>
-                <h4 class="name" id="_isUseFileBaseNameAsTitle"><span class="type-signature"></span>_isUseFileBaseNameAsTitle<span
-                        class="type-signature"></span></h4>
-                <div class="description">是否使用文件名作为文档标题 title</div>
-                <dl class="details"><dt class="tag-source">Source:</dt>
-                    <dd class="tag-source">
-                        <ul class="dummy">
-                            <li><a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line20">line
-                                    20</a></li>
-                        </ul>
-                    </dd>
-                </dl>
-                <h4 class="name" id="listTobeCreated"><span class="type-signature"></span>listTobeCreated<span class="type-signature"></span></h4>
-                <div class="description">将会被创建的文档文件列表，默认值来自`summary.havenListedDocs()`</div>
-                <dl class="details"><dt class="tag-source">Source:</dt>
-                    <dd class="tag-source">
-                        <ul class="dummy">
-                            <li><a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line26">line
-                                    26</a></li>
-                        </ul>
-                    </dd>
-                </dl>
-                <h3 class="subsection-title">Methods</h3>
-                <h4 class="name" id="createDefault"><span class="type-signature"></span>createDefault<span class="signature">(lists,
-                        contents)</span><span class="type-signature"></span></h4>
-                <div class="description">- 文档头部（示例）：`# titlt`- 以链接文本作为文档标题。</div>
-                <h5>Parameters:</h5>
-                <table class="params">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th class="last">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="name"><code>lists</code></td>
-                            <td class="type"><span class="param-type">Array.&lt;Array.&lt;string>></span></td>
-                            <td class="description last">将被创建的文件列表。</td>
-                        </tr>
-                        <tr>
-                            <td class="name"><code>contents</code></td>
-                            <td class="type"><span class="param-type">string</span></td>
-                            <td class="description last">附加中文内容。</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <dl class="details"><dt class="tag-source">Source:</dt>
-                    <dd class="tag-source">
-                        <ul class="dummy">
-                            <li><a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line54">line
-                                    54</a></li>
-                        </ul>
-                    </dd>
-                </dl>
-                <h4 class="name" id="createrByConfs"><span class="type-signature"></span>createrByConfs<span class="signature">(confs)</span><span
-                        class="type-signature"></span></h4>
-                <div class="description">依据一定的方式创建文档文件。</div>
-                <h5>Parameters:</h5>
-                <table class="params">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th class="last">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="name"><code>confs</code></td>
-                            <td class="type"><span class="param-type">object</span></td>
-                            <td class="description last">配置项。<h6>Properties</h6>
-                                <table class="params">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Type</th>
-                                            <th class="last">Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="name"><code>lists</code></td>
-                                            <td class="type"><span class="param-type">Array.&lt;Array.&lt;string>></span>|<span
-                                                    class="param-type">Array.&lt;string></span></td>
-                                            <td class="description last">将要被创建的文件列表，默认从`this._contentsToAppend`继承。</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="name"><code>contents</code></td>
-                                            <td class="type"><span class="param-type">string</span></td>
-                                            <td class="description last">要附带的内容（**可以以模版形式添加到正文**）。默认：``。</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="name"><code>useFileBaseNameAsTitle</code></td>
-                                            <td class="type"><span class="param-type">boolean</span></td>
-                                            <td class="description last">是否以文件名作为文档标题。默认：`false`。</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="name"><code>headTamplate</code></td>
-                                            <td class="type"><span class="param-type">string</span></td>
-                                            <td class="description last">文档头部模版函数名称(**可以是完整的文档内容，但函数只会传入文档 title
-                                                作为参数**)。- 如果要自定义模版，需要在本函数之前定义模版（新增或者修改 `this._headTemplates`属性）</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <dl class="details"><dt class="tag-source">Source:</dt>
-                    <dd class="tag-source">
-                        <ul class="dummy">
-                            <li><a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line85">line
-                                    85</a></li>
-                        </ul>
-                    </dd>
-                </dl>
-            </article>
-        </section>
-    </div>
-    <nav>
-        <h2><a href="index.html">Home</a></h2>
-        <h3>Classes</h3>
-        <ul>
-            <li><a href="creater.html">creater</a></li>
-            <li><a href="getDocTitle.html">getDocTitle</a></li>
-            <li><a href="summary.html">summary</a></li>
-            <li><a href="updateSummary.html">updateSummary</a></li>
-        </ul>
-        <h3>Global</h3>
-        <ul>
-            <li><a href="global.html#allDoc">allDoc</a></li>
-            <li><a href="global.html#listedDoc">listedDoc</a></li>
-            <li><a href="global.html#notListedDocuments">notListedDocuments</a></li>
-            <li><a href="global.html#userConfig">userConfig</a></li>
-            <li><a href="global.html#wrCFile">wrCFile</a></li>
-        </ul>
-    </nav><br class="clear">
-    <footer>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Dec 09 2018
-        10:54:20 GMT+0800 (GMT+08:00)</footer>
-    <script> prettyPrint(); </script>
-    <script src="scripts/linenumber.js"> </script>
-</body>
 
+<div id="main">
+
+    <h1 class="page-title">Class: creater</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2><span class="attribs"><span class="type-signature"></span></span>creater<span class="signature">()</span><span class="type-signature"></span></h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    
+    <h4 class="name" id="creater"><span class="type-signature"></span>new creater<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="_contentsToAppend"><span class="type-signature"></span>_contentsToAppend<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    附加的文档正文内容（比如某些特定模版内容）
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line22">line 22</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="_headTemplates"><span class="type-signature"></span>_headTemplates<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    文档头部模版- default: 使用`#` 作为 H1 的 markdown 文件头部模版;- equal: 使用`====` 作为 H1 标记的 markdown 文件头部模版；- yaml: 使用 YAML 头的 markdown 文件头部模版；- html(不可用，否则会对 markdown 类文件造成破坏——某些元素无法解析):    - HTML 或者 htm 文件不易固定，但已在函数内部使用完整（常规的HTML5——EMMET `html!`展开）的基础模版。
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line34">line 34</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="_ignores"><span class="type-signature"></span>_ignores<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    不会被创建的文件（远程链接）匹配正则表达式
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line24">line 24</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="_isUseFileBaseNameAsTitle"><span class="type-signature"></span>_isUseFileBaseNameAsTitle<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    是否使用文件名作为文档标题 title
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line20">line 20</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="listTobeCreated"><span class="type-signature"></span>listTobeCreated<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    将会被创建的文档文件列表，默认值来自`summary.havenListedDocs()`
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line26">line 26</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="createDefault"><span class="type-signature"></span>createDefault<span class="signature">(lists, contents)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    - 文档头部（示例）：`# titlt` - 以链接文本作为文档标题。
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>lists</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Array.&lt;string>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">将被创建的文件列表。</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>contents</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">附加中文内容。</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line54">line 54</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="createrByConfs"><span class="type-signature"></span>createrByConfs<span class="signature">(confs)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    依据一定的方式创建文档文件。
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>confs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">配置项。
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>lists</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Array.&lt;string>></span>
+|
+
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">将要被创建的文件列表，默认从`this._contentsToAppend`继承。</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>contents</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">要附带的内容（**可以以模版形式添加到正文**）。默认：``。</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>useFileBaseNameAsTitle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">是否以文件名作为文档标题。默认：`false`。</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>headTamplate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">文档头部模版函数名称(**可以是完整的文档内容，但函数只会传入文档 title 作为参数**)。 - 如果要自定义模版，需要在本函数之前定义模版（新增或者修改 `this._headTemplates`属性）</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="createfile.js.html">createfile.js</a>, <a href="createfile.js.html#line85">line 85</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="creater.html">creater</a></li><li><a href="getDocTitle.html">getDocTitle</a></li><li><a href="summary.html">summary</a></li><li><a href="updateSummary.html">updateSummary</a></li></ul><h3>Global</h3><ul><li><a href="global.html#allDoc">allDoc</a></li><li><a href="global.html#listedDoc">listedDoc</a></li><li><a href="global.html#notListedDocuments">notListedDocuments</a></li><li><a href="global.html#userConfig">userConfig</a></li><li><a href="global.html#wrCFile">wrCFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Dec 10 2018 14:14:42 GMT+0800 (GMT+08:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
 </html>
