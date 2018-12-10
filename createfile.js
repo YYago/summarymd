@@ -21,9 +21,9 @@ class creater {
         /** 附加的文档正文内容（比如某些特定模版内容）*/
         this._contentsToAppend = "";
         /** 不会被创建的文件（远程链接）匹配正则表达式*/
-        this._ignores = summStatu.remoteHrefRegexp;
+        this._ignores = new summStatu().remoteHrefRegexp;
         /** 将会被创建的文档文件列表，默认值来自`summary.havenListedDocs()`*/
-        this.listTobeCreated = summStatu.havenListedDocs();
+        this.listTobeCreated =new summStatu().li_link();
         /** 文档头部模版
          * - default: 使用`#` 作为 H1 的 markdown 文件头部模版;
          * - equal: 使用`====` 作为 H1 标记的 markdown 文件头部模版；
@@ -82,16 +82,15 @@ class creater {
      * @param {string} confs.headTamplate -文档头部模版函数名称(**可以是完整的文档内容，但函数只会传入文档 title 作为参数**)。
      *  - 如果要自定义模版，需要在本函数之前定义模版（新增或者修改 `this._headTemplates`属性）
     */
-    createrByConfs(confs = { lists: this.listTobeCreated, contents: this._contentsToAppend, useFileBaseNameAsTitle: false, headTamplate: "default" }) {
+    createrByConfs(confs = { lists: this.listTobeCreated, contents: this._contentsToAppend, useFileBaseNameAsTitle: false, headTemplate: "default" }) {
         let conf = confs || {}
         conf.lists = confs.lists || this.listTobeCreated;
         conf.contents = confs.contents || this._contentsToAppend;
-        conf.useFileBaseNameAsTitle = confs.useFileBaseNameAsTitle || false;
-        conf.headTamplate = confs.headTamplate || "default";
+        conf.useFileBaseNameAsTitle = confs.useFileBaseNameAsTitle !==false;
+        conf.headTemplate = confs.headTemplate || "default";
 
         let li = conf.lists;
-        let ht = conf.headTamplate;
-
+        let ht = conf.headTemplate;
         function titleFromBaseName(fp) {
             let f1 = path.basename(fp);
             let f2 = f1.replace(path.extname(fp), "");
@@ -101,13 +100,12 @@ class creater {
         for (let i = 0; i < li.length; i++) {
             let item = li[i];
             let itemTitle;
-
+            
             if (conf.useFileBaseNameAsTitle) {
                 itemTitle = titleFromBaseName(item[1]);
             } else {
                 itemTitle = item[0];
             }
-
             let itemPath = item[1];
             let fileType = path.extname(itemPath);
             let headTemp;
@@ -122,4 +120,4 @@ class creater {
         }
     }
 }
-module.exports = new creater()
+module.exports = creater
