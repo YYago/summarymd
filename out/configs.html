@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: summary.json配置说明</title>
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+    <div id="main">
+        <h1 class="page-title">summary.json配置说明</h1>
+        <section >
+            <header>
+                <h2>配置说明</h2>
+            </header>
+            <article >
+                <div class="container-overview" >
+                    <div class="description" >
+                        <pre class="prettyprint source linenums" style="padding-left:0px !important; width: 1024px !important">
+{
+    "update":{ # 目录更新配置
+
+        "isIndent": true,  # 是否使用缩进，"false" 则后续的缩进设置无效。
+
+        "TabLength": 4,    # 缩进空格数，建议值 4，这是单位缩进值，
+                           # 实际的缩进长度为：文件夹层级数 * TabLength，
+                           # 例如 3 层文件夹则实际缩进 3*4 =12。
+
+        "usFileBaseNameAsLinkText": false,  # 是否使用文件名作为文档link 文本。
+                                            # true 的话：
+                                            # * [doc](docs/abc.md) 会变成 * [abc](docs/abc.md) 
+
+        "liSign": "*",  # Markdown 列表前缀标记，默认“*”。 可选 " + 、- 、数字"等。 
+
+        "EncodeURI": false, # 是否对路径进行编码，编码方式 encodeURI() 。
+                            # 如果路径含有中文或者带有空格谨慎设置为 true， 
+                            # 因为编码之后可读性极差。本地使用时有些未编码处理的路径会造成死链。
+                            # 如果要上传到托管平台，则以平台实际处理为准，
+                            # 避免平台对URL二次编码，应保留 false 配置值。
+
+        "indentByDir": false, # 是否以文件夹作为缩进依据。为 true 的话，
+                              # 不管文件夹层级有多深，最多只缩进两次。
+                              # 效果为： 文章目录嵌套深度为3（只分3级目录） "li>li>li" 。
+                              # 如果为 "false" 则每个路径分隔符“/”缩进一次。
+
+        "out": "_summary.md", # 临时目录文件输出为。默认"_summary.md"，可以设置为其他名称或者其他类型文件，但内容格式依旧是 markdown。
+
+        "excludes": null  # 要排除的文件，即不希望被工具处理的文件（运行时这些文件将被忽略掉不处理）。
+                          # 格式："!./abc/**/*.*" 或者 ["!./**/*a.md"]
+                          # 注意： 
+                          #     1. "!" 符号时必须的， 有多个要排除的文件描述必须用" [] " 符号包裹。
+                          #     2. 路径匹配描述应该是完整的。 类似 "!./abc/**" 这种可能不会生效。可以改为："!./abc/**/*.*"
+    },
+    "createFile":{  # 批量创建文件配置
+
+        "isUseFileBaseNameAsTitle": false, # 是否使用文件名作为标题。如果 true,则：
+                                           # 目录中 * [python教程](docs/python01.md) 被创建之后，
+                                           # 它的标题将是 “ # python01” 而非 “ # python教程 ”。
+
+        "contentsToAppend":"",   # 附加的内容，批量创建文件时，可以将一些模版性的内容加进去。
+                                 # 比如 “[TOC]” ，这样被新建的文档就自动都带上 "[TOC]" 标记。
+
+        "isMkdir": false,       # 是否创建空文件夹？ (还未完成，无效配置项)。
+
+        "headTeamplate":"default",  # 文档头部模版名称， 这里的设置决定生成什么样的 Markdown 文档。
+                                    # 目前可选值：
+                                    # 1. "default" --># title 
+                                    # 2. "equal" --> title \n ====
+                                    # 3. "yaml" --> ---\n title: python01 \n ---
+    },
+    "globalReplace":{ # 批量替换内容替换 ，存在潜在风险，没写对应的处理代码。(无效配置项)
+        "Enable": false,
+        "findAs": "",
+        "replaceAs": ""
+    },
+    "watcher":true,
+}
+                        </pre>
+                    </div>
+                    <dl class="details"><dt class="tag-source">Source:</dt>
+                        <dd class="tag-source">
+                            <ul class="dummy">
+                                <li><a href="command.js.html">command.js</a>, <a href="command.js.html#line28">line 28</a></li>
+                            </ul>
+                        </dd>
+                    </dl>
+                </div>
+            </article>
+        </section>
+    </div>
+</body>
+
+</html>
