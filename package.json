@@ -1,10 +1,10 @@
 {
   "name": "summarymd",
-  "version": "1.0.1",
-  "description": "A tool For 'SUMMARY.md'.",
+  "version": "2.0.0",
+  "description": "A tool For 'SUMMARY.md'.It's Works same as The command 'gitbook init' of gitbook-cli。",
   "main": "index.js",
   "bin": {
-    "zz": "command.js"
+    "summarymd": "command.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,8 +17,9 @@
   "license": "MIT",
   "dependencies": {
     "cheerio": ">=1.0.0-rc.2",
-    "glob-watcher": ">=5.0.3",
+    "glob-watcher": "^5.0.3",
     "lodash": ">=4.17.11",
+    "markdown-it": "^8.4.2",
     "node-modules-custom": ">=1.0.6",
     "vinyl-read": ">=1.0.0"
   }

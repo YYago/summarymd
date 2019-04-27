@@ -1,352 +1,363 @@
-'use strict';
-
-/**
- * @file index.js
- */
-
 const fs = require('fs');
+const lodash = require('lodash');
 const path = require('path');
+const nmc = require('node-modules-custom');
 const vinlyRead = require('vinyl-read');
 const cheerio = require('cheerio');
 const osType = require('os').type();
+const markit = require('markdown-it');
+const mkit = new markit();
 
-/** @class */
-class summary {
+class SummaryMd {
     constructor() {
-        /** 
-         * 默认的全局文档匹配表达式
-         *
-         * - 仅 Markdown 和 HTML 类文件。
-        */
-        this.includeDocs = ['./**/*.md', './**/*.html', './**/*.markdown', './**/*.mdown', './**/*.htm'];
-        /** 
-         * 默认的全局文档排除匹配表达式。默认值：
-         * 
-         * - '!./\*\*\/node_modules\/\*\*\/\*.\*' ——排除所有本地 pack 文件。
-         * - '!./_summary.md' ——排除生成的文件。
-         * - '!./SUMMARY.md' ——排除项目目录文件。
-         * - '!.\/\*\*\/_book\/\*\*\/\*.\*' ——排除 GiBook build 命令生成的默认文件夹。
-        */
-        this.excludeDocs = ['!./**/node_modules/**/*.*', '!./_summary.md', '!./SUMMARY.md', '!./**/_book/**/*.*'];
-        /** 默认的远程路径匹配正则表达式*/
-        this.remoteHrefRegexp = /(\w\:\/|(\.\.\/)|(\:\\\\)|(\w+\:\d+)|\~\/|(\d.+\.\d).[\/|\:\?]?)|((\w\.[\w|\d]).*\/.+([\/]|\:\d|\.html|\.php|\.jsp|\.asp|\.py))/g;
-        /** 默认的全局作用路径*/
-        this.rootDir = process.cwd();
-        /** summary.md 中的 link 匹配规则(*也许你需要重置它以满足自己的需求*).*/
-        this._summLinkRegxp = /\]\(.*\.m(ar|d|k|down)+\)|\]\(.*\.ht(m|l)+\)/g;
-        /** 对_summLinkRegxp 匹配到结果进行清理(*也许你需要重置它以满足自己的需求*).*/
-        this._signBedelted = /^\]\(|\)$/g;
-        /** li 匹配正则表达式*/
-        this._linkRegxpMatch = /\*.*(\n|\r\n|\r)/g;
-        /** li 匹配结果整理*/
-        this._linkRegxpReplace = {
-            step1: /^.*(\*.+\[)/g,
-            step2: /\)\n/g,
-            step3: "]("
-        }
-    }
-    /**
-     * 在默认排除文件的基础上新增要排除的文件
-     * @method
-     * @param {string|string[]} igs -要排除的文件
-     * @returns {string[]} -返回新的数组。 
-     */
-    excludeDocsAdd(igs){
-        let wfs;
-        if (igs == undefined || igs == null || igs == [null] || igs == "") {
-            wfs = [...this.includeDocs, ...this.excludeDocs];
-        } else if (typeof (igs) == "object") {
-            wfs = [...this.includeDocs, ...this.excludeDocs, ...igs];
-        } else if (typeof (igs) == "string") {
-            wfs = [...this.includeDocs, ...this.excludeDocs, igs];
-        }
-        return wfs;
-    }
-    /**
-     * 获取当前路径下的所有 Markdown\HTML 类文件
-     * @method
-     * @param {string|string[]} ignoreDocs -要排除的文件。
-     * @returns
-     * @property {string[]} resolve -绝对路径
-     * @property {string[]} relative -相对路径
-     * 
-     * 默认的配置来自 `summary.property.includeDocs` 及 `summary.property.excludeDocs`.
-     */
-    DocsFileList(ignoreDocs) {
-        let wants = this.excludeDocsAdd(ignoreDocs);
-        let vinyleRes = vinlyRead.sync(wants, { read: false });
-        let rs_path = [];
-        let rs_path_relative = [];
-        if (!(vinyleRes == null)) {
-            for (let i in vinyleRes) {
-                let item = vinyleRes[i].path
-                let item_relative = path.relative(this.rootDir, item);
-                if (osType == "Windows_NT") {
-                    item = item.replace(/\\/g, "/");
-                    item_relative = item_relative.replace(/\\/g, "/");
+        this.configs = {
+            includes: ['./**/*.md', './**/*.markdown'],
+            excludes:['!./node_modules/**/*.*'],
+            summary: "./SUMMARY.md",
+            confs_with_create: {
+                isUseFileBasenameAsTitle: false,
+                remoteURLregexp: /(\w\:\/|(\.\.\/)|(\:\\\\)|(\w+\:\d+)|\~\/|(\d.+\.\d).[\/|\:\?]?)|((\w\.[\w|\d]).*\/.+([\/]|\:\d|\.html|\.php|\.jsp|\.asp|\.py))/g,
+            },
+            confs_with_summary: {
+                tempSummary: "./_summary.md",
+                isUseBFasLinkText: false,
+                listSing: "*",
+                isEncodeURI: false,
+                indent: {
+                    isIndent: true,
+                    indentLength: 4,
+                    IndentByDirs: null,
+                    IndentByTitle: null,
                 }
-                rs_path.push(item)
-                rs_path_relative.push(item_relative);
             }
-        }
-        return {
-            resolve: rs_path,
-            relative: rs_path_relative
-        }
-    };
-
-    /** 
-     * 获取已经被写进 `summary.md` 中的文件。
-     * @method
-     * @param {string} summaryFile -目录文件路径，默认：`'./SUMMARY.md'`。
-     * @returns
-     * @property {string[]} Local -仅当前目录下的本地文件路径。
-     * @property {string[]} Remote -“远程文件路径”
-     * @property {string[]}
-    */
-    havenListedDocs(summaryFile) {
-        let listFile = summaryFile || path.join(this.rootDir, 'SUMMARY.md');
-        if(fs.existsSync(listFile)==false){
-            return [];
-        }
-        let lfContent = fs.readFileSync(listFile, { encoding: 'utf8' });
-        let matchByLinkRegxp = lfContent.match(this._summLinkRegxp)
-        if (!(matchByLinkRegxp == null)) {
-            let links_len = matchByLinkRegxp.length;
-            let out_localFiles = [];
-            let out_remoteFiles = [];
-            for (let i = 0; i < links_len; i++) {
-                let link_item = matchByLinkRegxp[i];
-                let item = link_item.replace(this._signBedelted, "");
-                // 远程地址过滤
-                let isRemoter = this.remoteHrefRegexp.test(item);
-                if (isRemoter == false) {
-                    if (/\ /g.test(item)) {
-                        console.log(`  WARN: The path "${item}" has blank space!!!`)
+        };
+        this.excludes = [this.configs.excludes,'!'+this.configs.summary,'!'+this.configs.confs_with_summary.tempSummary]
+    }
+    // matheds
+    localDocs() {
+        let docs = lodash.flattenDeep([this.configs.includes, this.excludes]);
+        // TODO:
+        console.log(__filename+"39  "+ JSON.stringify(docs))
+        try {
+            let vinyleRes = vinlyRead.sync(docs, { read: false });
+            let rs_path_relative = [];
+            if (!(vinyleRes == null)) {
+                for (let i in vinyleRes) {
+                    let item = vinyleRes[i].path
+                    let item_relative = path.relative(process.cwd(), item);
+                    if (osType == "Windows_NT") {
+                        item = item.replace(/\\/g, "/");
+                        item_relative = item_relative.replace(/\\/g, "/");
                     }
-                    if (/[\u4e00-\u9fa5]/g.test(item)) {
-                        console.log(`   WARN: The path "${item}" has [\\u4e00-\\u9fa5] !!!`)
-                    }
-                    out_localFiles.push(item);
-                } else {
-                    out_remoteFiles.push(item);
+                    rs_path_relative.push(item_relative);
+                }
+            }
+            let localFileDocs = [];
+            for (let y = 0; y < rs_path_relative.length; y++) {
+                try {
+                    let doc = fs.readFileSync(rs_path_relative[y], "utf8");
+                    let docConent = mkit.render(doc);
+                    let $ = cheerio.load(docConent);
+                    let title = $('h1').text()
+                    let link_href = rs_path_relative[y]
+                    let lilink = { title: title, path: link_href }
+                    localFileDocs.push(lilink);
+                } catch (e) {
+                    throw Error(e)
                 }
             }
             return {
-                Local: out_localFiles,
-                Remote: out_remoteFiles
-            };
-        } else {
-            console.log(`   Con't Match anything from "${summfile}".`);
-            return
-        }
-    };
-
-    /** 
-     * 获取目录文件中的列表的链接的文本和地址
-     * @method
-     * @param {string} summaryFile -目录文件路径，默认：`'./SUMMARY.md'`。
-     * @returns {string[][]} 返回格式: `[['About','docs/example.md'],...]`
-     * 
-    */
-    li_link(summaryFile) {
-        let sf = summaryFile || path.join(this.rootDir, 'SUMMARY.md');
-        let sContent = fs.readFileSync(sf, { encoding: 'utf8' });
-        let regRS = sContent.match(this._linkRegxpMatch);
-        let beReturn = []; // 全部的结果
-        if (!(regRS == null)) {
-            for (let i = 0; i < regRS.length; i++) {
-                let item_i = regRS[i];
-                let bePushed = item_i.replace(this._linkRegxpReplace.step1, "");
-                bePushed = bePushed.replace(this._linkRegxpReplace.step2, "");
-                bePushed = bePushed.split(this._linkRegxpReplace.step3);
-                beReturn.push(bePushed);
+                docPaths: rs_path_relative,
+                docs: localFileDocs
             }
-            return beReturn;
+        } catch (e) {
+            throw Error(e);
+        }
+    }
+    summaryList() {
+        if (fs.existsSync(this.configs.summary) == false) {
+            console.warn(`  ${this.configs.summary} not exists! If it not your summary file,please setting the true path!`)
+            return [{ title: null, path: null }];
+        }
+        let summaryContent = fs.readFileSync(this.configs.summary, { encoding: 'utf8' });
+        let summRender = mkit.render(summaryContent)
+        let $ = cheerio.load(summRender)
+        let docs
+        if ($('li a').length == 0) {
+            docs = [{ title: null, path: null }];
+            console.warn(`  Can't find any "<a>...</a>" in ${this.configs.summary}!`)
+            return docs;
+        }
+        if (this.configs.confs_with_summary.isUseBFasLinkText) {
+            docs = $('li a').map((i, el) => {
+                let item_path = $(el).attr('href')
+                if (this.configs.confs_with_create.remoteURLregexp.test(item_path) == false && item_path !== undefined) {
+                    return { title: path.basename(item_path).replace(path.extname(item_path), ""), path: item_path }
+                }
+            }).get()
         } else {
-            console.log(`   Con't Match anything from ${sf}.`);
-            return
+            docs = $('li a').map((i, el) => {
+                let item_title = $(el).text();
+                let item_path = $(el).attr('href');
+                if (this.configs.confs_with_create.remoteURLregexp.test(item_path) == false && item_path !== undefined) {
+                    return { title: item_title, path: item_path }
+                }
+            }).get()
         }
-    };
-
-    /** 
-     * 获取目录文件中的列表的链接的文本和地址（不同于`li_link()`）
-     * @method
-     * @param {string} summaryFile -目录文件路径，默认：`'./SUMMARY.md'`。
-     * @returns {string[][]} 返回格式：`[['example','docs/example.md'],...]`
-     * @description
-     * 原有的链接中的文本会被忽略，直接中路径中获取文件名(不含文件扩展名)：
-     * @example
-     * //* [About](docs/example.md)
-     * // 将得到：
-     * // [['example','docs/example.md']]
-    */
-    li_link_withBaseName(summaryFile) {
-        let sf = summaryFile || path.join(this.rootDir, 'SUMMARY.md');
-        let sContent = fs.readFileSync(sf, { encoding: 'utf8' });
-        let vbfRst = sContent.match(this._summLinkRegxp);
-        if (!(vbfRst == null)) {
-            let vbfArr = [];
-
-            for (let i = 0; i < vbfRst.length; i++) {
-                let i_item = vbfRst[i];
-                let itemRp = i_item.replace("](", "")
-                itemRp = itemRp.replace(/\)$/g, "")
-                let outItem = [(path.basename(itemRp)).replace(path.extname(itemRp), ""), itemRp];
-                vbfArr.push(outItem);
-            }
-            return vbfArr;
-        } else {
-            console.log(`   ${__filename}200:46 Con't Match anything from ${sf}.`)
-            return
-        }
-    };
-    /** 
-     * li 缩进控制
-     * @param {string} href -file path.
-    */
-    li_indent(href) {
-        let prefixRegexp = /^\.\//g;
-        let blankSp = ` `;
-        let hrefn = href.replace(prefixRegexp, "");
-        let pLeng = hrefn.match(/\//g);
-        let pL;
-        if (pLeng !== null) {
-            pL = pLeng.length;
-        } else {
-            pLeng = 0
-        }
-        let pL_dir;
-        if (pL > 1 && pL < 3) {
-            pL_dir = 1;
-        } else if (pL > 3) {
-            pL_dir = 2;
-        } else {
-            pL_dir = 0;
-        }
-        return { default: pL, byDir: pL_dir }
-
-    };
-}
-
-/** @class*/
-class getDocTitle {
-    constructor() {
-        /**
-         * 测试和获取 md 内容的标题 `# title`
-         */
-        this._regMD_pound = /^[#]{1}[^#].+/g;
-        this._regMD_pound_beRP = /^\#+\ +/g;
-
-        /**
-         * 测试和获取 md 内容的标题 
-         * @example 
-         *
-         *'title'
-         *'====='
-         */
-        this._regMD_equal = /^.+[\r\n]\=.+/g;
-        this._regMD_equal_beRP = /[\n|\r]\=+/g;
-        /**
-         * 测试和获取 md 内容的 YAML 头标题
-         */
-        this._regMD_yaml_1 = /^(-){3}.*[\W\w]*\-{3}$/g;
-        this._regMD_yaml_2 = /^(title)\W.+[\b\W]/g;
-        this._regMD_yaml_beRP = /(title:) *|(title.+:) */g;
-
-        /**
-         * 从传入的内容中获取 title
-         * @method fromContent
-         * @param {string} str  -Contents
-         * @param {string} types  -Type: can be `"md"` \ `html` or `markdown`.
-         * 
-         * @example
-         * getTitle.fromContent(str,type)
-         */
-    };
-    fromContent(str) {
-        let types = arguments[1] || ".md";
-        let strs = str;
-        let content_title;
-        if (types == ".md" || types == ".markdown" || types == ".mdown") {// TODO: emmm，继续猜......
-            // title with '#'
-            if (this._regMD_pound.test(strs)) {
-                let regR = strs.match(this._regMD_pound);
-                regR = regR[0];
-                regR = regR.replace(this._regMD_pound_beRP, "");
-                content_title = regR;
-                // title with '==='
-            } else if (this._regMD_equal.test(strs)) {
-                let regR = strs.match(this._regMD_equal);
-                regR = regR[0];
-                regR = regR.replace(this._regMD_equal_beRP, "");
-                content_title = regR;
-                // title with YAML
-            } else if (this._regMD_yaml_1.test(strs)) {
-                let regR = strs.match(this._regMD_yaml_1);
-                regR = regR[0];
-                regR = regR.match(this._regMD_yaml_2)[0];
-                regR = regR.replace(this._regMD_yaml_beRP);
-                content_title = regR;
-            }
-        } else if (types == "html" || types == "htm") {
-            let $ = cheerio.load(strs);
-            let title = $('h1').first().text()
-            content_title = title;
-        }
-        return content_title
+        return docs;
     }
     /**
-     * 从文件中获取 title (仅限 Markdown 和 HTML 类型文件)
-     * @method
-     * @param {string} FilePath -Markdown file path.
+     * Print the path and link text of the files which not exists ,It's let your know that has some problems in summary lists.
      * 
-     * returns {object} `title`、`summary_link_with_title`
+     * - Note : It only check local paths and link texts from 'summaryList()' .
      */
-    fromFile(FilePath) {
-        let str = fs.readFileSync(FilePath, { encoding: 'utf8' });
-        let fType = path.extname(FilePath);
-        let ftitle = this.fromContent(str, fType);
-
-        return {
-            title: ftitle,
-            summary_link_with_title: [ftitle, FilePath]
+    _summaryStatus_hasProblems(){
+        let beChecks = this.summaryList()
+        let problem_with_URL = [];
+        let problem_with_Text =[];
+        for(let i=0;i<beChecks.length; i++){
+            let c_path = beChecks[i].path;
+            if(fs.existsSync(c_path)==false||c_path==undefined){
+                
+                problem_with_URL.push(beChecks[i])
+            }
+            if(beChecks[i].title==undefined){
+                
+                problem_with_Text.push(beChecks[i])
+            }
         }
-    }
-    /** It's so......
-     * 
-     * we can use the module cheerio to control it. be easier.
-     * 
-     * @method
-     * @param {FilePath} FilePath  -HTML filepath.
-     * 
-     * @property {string} title -The First H1 of HTML.
-     * @property {array} summary_link_with_title -[title, FilePath]
-    */
-
-    fromHTML(FilePath) {
-        let str = fs.readFileSync(FilePath, { encoding: 'utf8' });
-        let $ = cheerio.load(str);
-        let title = $('h1').first().text()
+        console.warn(`  WARN_URL : These files are not exist or no URL !! ——> \n${JSON.stringify(problem_with_URL)}`);
+        console.warn(`  WARN_Text: These links do not have text !! ——> \n${JSON.stringify(problem_with_Text)}`);
         return {
-            title: title,
-            summary_link_with_title: [title, FilePath],
+            problem_with_URL,
+            problem_with_Text
         }
     }
     /**
-     *  for `SUMMARY.md` link use file basename.
-     * @param {string} FilePath - 路径
-     * @returns {string[]}
-     * @example 
-     * 
-     * `* [myDoc](docs/new/myDoc.md)`--> `["myDoc","docs/new/myDoc.md"]`
+     * The list use to update summary lists.
      */
-    summaryLink_with_filebasename(FilePath) {
-        return [path.basename(FilePath), FilePath];
+    docs_not_listed_in_summary() {
+        //let hasListed = [];
+        //lodash.forIn(this.summaryList(), (o) => { hasListed.push(o.path) });
+        //TODO:
+        //console.log(`haslisted：\n${JSON.stringify(hasListed)}`)
+        //let notlists = lodash.remove(this.localDocs().docs, (ite) => { return lodash.includes(hasListed, ite.path)==true })
+        let notlists = lodash.difference(this.localDocs().docs,this.summaryList())
+        return notlists
+    }
+    /**
+     * Create the files from summary.
+     * 
+     * @param {function} template The function to return template.Note:You must define at least one string parameter to define the title of the article, even if you don't need it.
+     * 
+     * If 'template()' was undefined , will write the content like "# title" to the new file.
+     */
+    create(template) {
+        let beCreated = this.summaryList()
+        for (let i = 0; i < beCreated.length; i++) {
+            let ite_title = beCreated[i].title;
+            let ite_path = beCreated[i].path;
+            let content = template(ite_title) || `# ${ite_title}\n`;
+            try {
+                nmc.writeFileSyncLongBatch(ite_path, content, false, { encoding: 'utf8', flag: 'w' });
+            } catch (e) {
+                throw e;
+            }
+        }
+    }
+    update() {
+        let tabLen = this.configs.confs_with_summary.indent.indentLength;
+        let liSign = this.configs.confs_with_summary.listSing;
+        let isIndent = this.configs.confs_with_summary.indent.isIndent;
+        let temSumm = this.configs.confs_with_summary.tempSummary;
+        let isUFBAT = this.configs.confs_with_summary.isUseBFasLinkText;
+        let isEncoding = this.configs.confs_with_summary.isEncodeURI;
+        let indentBydirs = this.configs.confs_with_summary.indent.IndentByDirs;
+        let indentByTitle = this.configs.confs_with_summary.indent.IndentByTitle;
+        let beUpdates = this.docs_not_listed_in_summary();
+
+        if (temSumm == this.configs.summary) {
+            console.error(`The path of the Temporary Summary file was sames as the real Summary file!!! It will bring you big trouble!!!`)
+            return
+        }
+        function dirLength(path) {
+            try {
+                let prefixRegexp = /(^\.\/)|(^\/)/g;
+                let hrefn = path.replace(prefixRegexp, "");
+                let pLeng = hrefn.match(/\//g);
+                let pl
+                if (pLeng == null) {
+                    pl = 0;
+                } else {
+                    pl = pLeng.length;
+                }
+                return pl;
+            } catch (e) {
+                throw Error(e)
+            }
+        }
+        let notes =
+            `
+注意：
+    1. 这是临时的目录文件。
+    2. 文档的先后顺序可能需要你手动调整之后复制到正式的目录文件中。
+    3. 你可以通过更改配置文件或者模块的全局配置的变量来得到你想要的生成目录方式。配置项详细说明:[CONFIGS](README.zh-cn.md#confs)
+    4. 请将本文件添加到“.gitignore”的排除文件列表中。
+
+NOTE:
+    1. This is a temporary directory file.
+    2. The order of documents may need to be manually adjusted and copied to a formal directory file.
+    3. You can change the configuration file or the global configuration variables of the module to get the way you want to generate the directory. Configuration details: [CONFIGS](README.md#confs)
+    4. Please add this document to the list of excluded files of ".gitignore".
+
+Temporary SUMMARY:
+
+`;
+        try {
+            fs.writeFileSync(temSumm, notes, { encoding: 'utf8', flag: 'w' });
+        } catch (e) {
+
+        }
+        if (isIndent == false) {
+            for (let i = 0; i < beUpdates.length; i++) {
+                let i_title = beUpdates[i].title;
+                let i_path = beUpdates[i].path;
+                let line;
+                if (isEncoding) {
+                    i_path = encodeURI(i_path);
+                }
+                if (isUFBAT) {
+                    let UFBAT = path.basename(i_path).replace(path.extname(i_path), "")
+                    line = `${liSign} [${UFBAT}](${i_path})\n`;
+                } else {
+                    line = `${liSign} [${i_title}](${i_path})\n`;
+                }
+                fs.writeFileSync(temSumm, line, { encoding: 'utf8', flag: 'a' });
+            }
+        } else {
+            if (indentByTitle !== null && indentBydirs !== null) {
+                console.error(`You can't define two indentation modes at the same time.————"confs_with_summary.indent.IndentByDirs" and "confs_with_summary.indent.IndentByTitle" `)
+                return
+            }
+            if (indentByTitle == null && indentBydirs == null) {
+                for (let i = 0; i < beUpdates.length; i++) {
+                    let i_title = beUpdates[i].title;
+                    let i_path = beUpdates[i].path;
+                    let indentTimes = dirLength(i_path);
+                    if (isEncoding) {
+                        i_path = encodeURI(i_path);
+                    }
+                    let line;
+                    if (isUFBAT) {
+                        let UFBAT = path.basename(i_path).replace(path.extname(i_path), "")
+                        line = `${" ".repeat(tabLen * indentTimes)}${liSign} [${UFBAT}](${i_path})\n`;
+                    } else {
+                        line = `${" ".repeat(tabLen * indentTimes)}${liSign} [${i_title}](${i_path})\n`;
+                    }
+                    fs.writeFileSync(temSumm, line, { encoding: 'utf8', flag: 'a' });
+                }
+                return
+            }
+            if (indentByTitle !== null && indentBydirs == null) {
+                let Bys = indentByTitle;
+                for (let b = 0; b = Bys.length; b++) {
+                    let bitem_find = Bys[b].basis;
+                    let bitem_times = Bys[b].times;
+                    for (let i in beUpdates) {
+                        let i_title = beUpdates[i].title;
+                        let i_path = beUpdates[i].path;
+                        let indentTimes
+                        if (bitem_find.test(i_title)) {
+                            indentTimes = bitem_times;
+                            if (isEncoding) {
+                                i_path = encodeURI(i_path);
+                            }
+                            let line;
+                            if (isUFBAT) {
+                                let UFBAT = path.basename(i_path).replace(path.extname(i_path), "")
+                                line = `${" ".repeat(tabLen * indentTimes)}${liSign} [${UFBAT}](${i_path})\n`;
+                            } else {
+                                line = `${" ".repeat(tabLen * indentTimes)}${liSign} [${i_title}](${i_path})\n`;
+                            }
+                            fs.writeFileSync(temSumm, line, { encoding: 'utf8', flag: 'a' });
+                            // remov has added doc.
+                            beUpdates = lodash.remove(beUpdates, beUpdates[i]);
+                            if (beUpdates.length == 0) {
+                                return
+                            }
+                        }
+                    }
+                }
+                if (beUpdates.length > 0) {
+                    for (let i = 0; i < beUpdates.length; i++) {
+                        let i_title = beUpdates[i].title;
+                        let i_path = beUpdates[i].path;
+                        let line;
+                        if (isEncoding) {
+                            i_path = encodeURI(i_path);
+                        }
+                        if (isUFBAT) {
+                            let UFBAT = path.basename(i_path).replace(path.extname(i_path), "")
+                            line = `${liSign} [${UFBAT}](${i_path})\n`;
+                        } else {
+                            line = `${liSign} [${i_title}](${i_path})\n`;
+                        }
+                        fs.writeFileSync(temSumm, line, { encoding: 'utf8', flag: 'a' });
+                    }
+                    return
+                }
+            }
+            if (indentByTitle == null && indentBydirs !== null) {
+                let Bys = indentBydirs;
+                for (let b = 0; b = Bys.length; b++) {
+                    let bitem_find = Bys[b].basis;
+                    let bitem_times = Bys[b].times;
+                    for (let i in beUpdates) {
+                        let i_title = beUpdates[i].title;
+                        let i_path = beUpdates[i].path;
+                        let indentTimes
+                        if (bitem_find.test(i_path)) {
+                            indentTimes = bitem_times;
+                            if (isEncoding) {
+                                i_path = encodeURI(i_path);
+                            }
+                            let line;
+                            if (isUFBAT) {
+                                let UFBAT = path.basename(i_path).replace(path.extname(i_path), "")
+                                line = `${" ".repeat(tabLen * indentTimes)}${liSign} [${UFBAT}](${i_path})\n`;
+                            } else {
+                                line = `${" ".repeat(tabLen * indentTimes)}${liSign} [${i_title}](${i_path})\n`;
+                            }
+                            fs.writeFileSync(temSumm, line, { encoding: 'utf8', flag: 'a' });
+                            // remov has added doc.
+                            beUpdates = lodash.remove(beUpdates, beUpdates[i]);
+                            if (beUpdates.length == 0) {
+                                return
+                            }
+                        }
+                    }
+                }
+                if (beUpdates.length > 0) {
+                    for (let i = 0; i < beUpdates.length; i++) {
+                        let i_title = beUpdates[i].title;
+                        let i_path = beUpdates[i].path;
+                        let line;
+                        if (isEncoding) {
+                            i_path = encodeURI(i_path);
+                        }
+                        if (isUFBAT) {
+                            let UFBAT = path.basename(i_path).replace(path.extname(i_path), "")
+                            line = `${liSign} [${UFBAT}](${i_path})\n`;
+                        } else {
+                            line = `${liSign} [${i_title}](${i_path})\n`;
+                        }
+                        fs.writeFileSync(temSumm, line, { encoding: 'utf8', flag: 'a' });
+                    }
+                    return
+                }
+            }
+        }
     }
 }
 
-module.exports = {
-    summary,
-    getDocTitle
-}
+module.exports = SummaryMd
