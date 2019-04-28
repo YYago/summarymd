@@ -1,17 +1,18 @@
 {
   "name": "summarymd",
-  "version": "2.0.0",
-  "description": "A tool For 'SUMMARY.md'.It's Works same as The command 'gitbook init' of gitbook-cli。",
+  "version": "2.0.1",
+  "description": "A tool For 'SUMMARY.md'. Create files in batches to update directory lists.",
   "main": "index.js",
   "bin": {
     "summarymd": "command.js"
   },
+  "keywords": ["Markdown","SUMMARY","book","HTML"],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git@gitee.com:class877/summarymd.git"
+    "url": "git@github.com:YYago/summarymd.git"
   },
   "author": "YYago",
   "license": "MIT",

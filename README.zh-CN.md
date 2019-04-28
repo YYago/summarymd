@@ -1,8 +1,10 @@
 # summarymd
 
->之前不怎么用 Gitbook ，后来发现 summarymd 实现的功能类似 Gitbook 的 “gitbook init” 命令。
+**V2.0.0+是一个全新的版本，以前的接口不再支持！！！**
 
-**V2.0.0是一个全新的版本，以前的接口不再支持！！！**
+![summarymd](indentBy.jpg)
+
+>之前不怎么用 Gitbook ，后来发现 summarymd 实现的功能类似 Gitbook 的 “gitbook init” 命令。
 
 summarymd 可以：
 1. summarymd 让文件的创建过程可控，可定制。
@@ -102,8 +104,10 @@ this.configs = {
         summary: "./SUMMARY.md",
         // 创建文件的配置
         confs_with_create: {
-            // 是否使用文件名作为文档标题。
-            isUseFileBasenameAsTitle: false,
+            /**
+             * 在创建文件时是否跳过URL为空或者链接文本为空的列表。
+             */
+            isSkipEmptyTitleOrEmptyPath:true,
             // 远程路径匹配表达式(无法创建远程文件，如果可以你可以尝试下载它们，但这里只能将其排除)
             remoteURLregexp: /(\w\:\/|(\.\.\/)|(\:\\\\)|(\w+\:\d+)|\~\/|(\d.+\.\d).[\/|\:\?]?)|((\w\.[\w|\d]).*\/.+([\/]|\:\d|\.html|\.php|\.jsp|\.asp|\.py))/g,
         },
@@ -153,27 +157,54 @@ this.configs = {
 配置文件通过 ：`summarymd init` 生成。生成的文件为：`./summaryConfig.js` 。它的内容如下：
 
 ```js
-const confs ={
-    // you can add more property if you need(Different from defaults). but don't del the default propertys(you can change the value).
-    // Why not JSON? For the summarymd module, you can redefine anything and use JavaScript files to customize configuration files with greater freedom. 
-    // If you need more customization, consider using the summarymd module instead of the command line.
 
-    template: "# %title%",// it's just a default string ,you can do more. the "%title%" will be replaced by true title. 
+// you can add more property if you need(Different from defaults). but don't del the default propertys(you can change the value).
+// Why not JSON? For the summarymd module, you can redefine anything and use JavaScript files to customize configuration files with greater freedom. 
+// If you need more customization, consider using the summarymd module instead of the command line.
+
+const confs ={
+    // 
+    // it's just a default string ,you can do more. the "%title%" will be replaced by true title. 
+    template: "# %title%",
+    // 要包含的文件描述。
     includes: ['./**/*.md', './**/*.markdown'],
+    // 要排除的文件描述。
     excludes:['!./node_modules/**/*.*'],
+    // 正式目录文件。
     summary: "./SUMMARY.md",
     confs_with_create: {
-        isUseFileBasenameAsTitle: false,
+        /**
+         * 在创建文件时是否跳过URL为空或者链接文本为空的列表。
+         */
+        isSkipEmptyTitleOrEmptyPath:true,
+        // 远程路径匹配规则。
         remoteURLregexp: /(\w\:\/|(\.\.\/)|(\:\\\\)|(\w+\:\d+)|\~\/|(\d.+\.\d).[\/|\:\?]?)|((\w\.[\w|\d]).*\/.+([\/]|\:\d|\.html|\.php|\.jsp|\.asp|\.py))/g,
         },
     confs_with_summary: {
+        // 临时目录文件。
         tempSummary: "./_summary.md",
+        // 是否使用基础文件名作为链接文本。
         isUseBFasLinkText: false,
+        // Markdown 列表标记符。
         listSing: "*",
+        // 是否对链接进行 URL 编码。
         isEncodeURI: false,
         indent: {
+            // 是否进行缩进, 'false'的话，后续的缩进设置会被忽略，不会执行缩进。 
             isIndent: true,
-            indentLength: 4,
+
+            // 单次缩进的空格个数。 本模块的实际缩进量 = indentLength * times，照目前的配置，缩进2次就是缩进 8 个空格。
+            indentLength: 4, 
+            
+            /* 下面两个配置项控制自定义缩进规则，基本格式为：
+             
+              [{basis:/npm/g,times:1}]
+            
+             basis -缩进规则，类型：正则表达式
+             times -缩进次数（注意：不是缩进量是缩进次数）
+            
+            上面例子表示： 匹配到 "npm" 就缩进一次。
+            注意：你不能同时设置它们，只能选其中一种方式来进行生成临时目录文件。如果不需要自定义缩进规则的话将两者都设置为null。
             IndentByDirs: null,
             IndentByTitle: null,
         }
@@ -185,3 +216,29 @@ module.exports = {
 ```
 
 这与模块引用方法差不多，只是为了尽可能简单地重新定义默认值因而做了一些改变......总之感觉很复杂！使用JSON格式的配置文件不方便使用可变型的追加内容——尤其在批量创建新文档的时候，比如日期、时间这些可变的内容。比较了下，比起使用命令行还不如直接部署一个临时npm项目......
+
+## Methods
+
+注意：类属性`configs.includes` 和 `configs.excludes` 的值以及目录文件(例如：`summary.md`)的内容决定了函数的返回值。 
+
+* ` .create(template[,Function])` -创建目录列表中的文件，已存在的文件会跳过。*这需要有"summary.md" 文件或者其他有类似列表的文件。* 
+    >Function 是必须提供的并且须定义至少一个参数给内部标题使用。定义的函数须返回字符串内容。例如：
+    >
+    > ```js
+    > example.create( (title)=>{ return `${title}\n===\n Add more contents.`});
+    >```
+    >**函数的返回值将作为新文件的内容，如果函数返回 `undefined` 那么新文件的内容将是类似于："`# example`"**
+
+* ` .update()` -更新目录列表。*更新的内容会存放在临时目录文件中（默认路径为：`./_summary.md`）*
+
+* ` .localDocs().docPaths` -返回本地已存在文档的路径。数组，结果类似于：`["example.md",...]`。
+
+* ` .localDocs().docs` -返回本地已存在文档的标题和路径。数组，结果类似于：`[{title:'example',path:'example.md'},...]`。
+
+* ` .summaryList()` -返回目录列表的链接信息。结果类似于：`[{title:'example',path:'example.md'}]`。
+
+* ` .docs_not_listed_in_summary()` -返回已存在于本地，但还未被列入目录文件的文档信息。结果类似于：`[{title:'example',path:'example.md'}]`。
+
+* ` ._summaryStatus_hasProblems().problem_with_URL` -返回目录文件中未设置路径或者URL指向的文件不存在的列表。结果类似于：`[{title:'example',path:'example.md'}]`。或者`[]`。
+
+* ` ._summaryStatus_hasProblems().problem_with_Text` -返回目录文件夹中链接文本为空的链接列表。结果类似于：`[{title:'example',path:'example.md'}]`或者 `[]`。
