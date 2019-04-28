@@ -6,7 +6,7 @@
 
 **V2.0.0+ is a new version, the previous interface is no longer supported!!! [中文 Readme](README.zh-CN.md)**
 
-![summarymd](https://github.com/YYago/summarymd/indentBy.jpg)
+![summarymd](./indentBy.jpg)
 
 Summymd can:
 
